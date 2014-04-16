@@ -44,15 +44,13 @@ vector<cSprite*> playerBullet;
 vector<cSprite*>::iterator bulletiter;
 vector<cSprite*>::iterator Bulletiter;
 
-vector<cSprite*> Player;
-vector<cSprite*>::iterator iterPlayer;
 
 
 float enemy = 50;
 
-short noOfBullets = 0; 
+short Bullets = 0;
 short shootingDelay = 0; 
-int shipPower = 20; 
+int planetShields = 20; 
 
 RECT clientBounds;
 
@@ -118,9 +116,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//Controls when the bullet is fired from the players ship
 				if (wParam == VK_SPACE)
 				{
-					if ((noOfBullets <= 100 && shootingDelay == 0) && shipPower > 0)
+					if ((Bullets <= 100 && shootingDelay == 0))
 					{
-						shipPower--;
 						shootingDelay++;
 						cSprite* theplayerBullet = new cSprite();
 						theplayerBullet->setTexture(gameTextures[3]);
@@ -128,7 +125,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 						theplayerBullet->setTranslation(D3DXVECTOR2(0, -2000.0f));
 						theplayerBullet->setisActive(true);
 						playerBullet.push_back(theplayerBullet);
-						noOfBullets++;
+						Bullets++;
 					}
 					return 0;			
 					}
@@ -284,7 +281,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLi
 
 	/* initialize random seed: */
 	D3DXMATRIX enemyTransform;
-	D3DXVECTOR3 enemyPos;
+	D3DXVECTOR3 enemyPos; 
 
 
 	//====================================================================
@@ -330,7 +327,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLi
 	SetRect(&textPos, 10, 10, 550, 100);
 	//Set the size of the box for the players ships power
 	RECT textPos2;
-	SetRect(&textPos2, 20, 550, 450, 640);
+	SetRect(&textPos2,10, 50, 450, 640);
 
 	//Enemy variables
 	int i = 0;
@@ -369,9 +366,9 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLi
 				timeElapsed = 0.0f;
 			}
 			//gameover screen
-			if (currentScene == 1 && shipPower <=0)
+			if (currentScene == 1 && planetShields <=0)
 			{
-				shipPower = 20;
+				planetShields = 20;
 				gScore = 0;
 				d3dMgr->beginRender();
 				theBackbuffer = d3dMgr->getTheBackBuffer();
@@ -477,16 +474,16 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLi
 						(*iterA)->setSpritePos((*iterA)->getSpritePos() + D3DXVECTOR3(0, 0.2f, 0));
 				}
 
-				//Erase enemies that go past the screem edge
-				//Minus 1 ship power for being bad and missing an enemy ship!
+				//Destroy enemies that go past the screem edge
+				//Minus 1 from the planets shield for being bad and missing an enemy ship!
 				iterB = aEnemy.begin();
 				while (iterB != aEnemy.end())
 				{
 					if ((*iterB)->getSpritePos().y > 810.0f)
 					{
+						planetShields --;
 						enemiesonScreen--;
 						i--;
-						shipPower --;
 						if (noOfEnemies >= 1)
 						{
 							noOfEnemies = 0;
@@ -506,7 +503,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLi
 					if ((*bulletiter)->getSpritePos2D().y < -20.0f)
 					{
 						bulletiter = playerBullet.erase(bulletiter);
-						noOfBullets--;
+						Bullets--;
 					}
 					else
 					{
@@ -537,10 +534,9 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLi
 							gExplodeSound.playSound(L"Sounds\\explosion.wav", false);
 							noOfEnemies--;
 							enemiesonScreen--;
-							noOfBullets--;
+							Bullets--;
 							i--;
 							shootingDelay = 0;
-							shipPower++;
 							gScore++;
 							//Delete collisions
 							Bulletiter = playerBullet.erase(Bulletiter);
@@ -560,7 +556,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLi
 
 				//Create both the text for the Score board and the ships power
 				sprintf_s(gScorestr, 50, "Score : %d", gScore);
-				sprintf_s(gScoreStr, 50, "Ship Power : %d", shipPower);
+				sprintf_s(gScoreStr, 50, "Planets Shield : %d", planetShields);
 
 				//Begins drawing the surfaces
 				d3dMgr->beginRender();
